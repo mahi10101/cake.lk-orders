@@ -1,0 +1,192 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cake Orders Handling Sheet</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #fff8f0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #d2691e;
+    }
+    form, table {
+      margin: 20px auto;
+      max-width: 1000px;
+      width: 100%;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 4px;
+      box-sizing: border-box;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #d2691e;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #a0522d;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 30px;
+    }
+    th, td {
+      border: 1px solid #999;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f4c9b1;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Cake Orders Handling Sheet</h1>
+
+  <form id="orderForm">
+    <label>About Order</label>
+    <textarea name="aboutOrder"></textarea>
+
+    <label>Order Number</label>
+    <input type="text" name="orderNumber" required />
+
+    <label>Order Date</label>
+    <input type="date" name="orderDate" required />
+
+    <label>Delivery Date</label>
+    <input type="date" name="deliverDate" required />
+
+    <label>Customer Name</label>
+    <input type="text" name="customerName" required />
+
+    <label>Contact Number</label>
+    <input type="tel" name="contact" required />
+
+    <label>Location</label>
+    <input type="text" name="location" required />
+
+    <label>Message on Cake</label>
+    <textarea name="cakeMessage"></textarea>
+
+    <label>Surprise or Not</label>
+    <select name="surprise">
+      <option value="Yes">Yes</option>
+      <option value="No">No</option>
+    </select>
+
+    <label>Advance (₹)</label>
+    <input type="number" name="advance" step="0.01" />
+
+    <label>Balance (₹)</label>
+    <input type="number" name="balance" step="0.01" />
+
+    <button type="submit">Add Order</button>
+  </form>
+
+  <button onclick="downloadCSV()">Export to CSV</button>
+
+  <table id="ordersTable">
+    <thead>
+      <tr>
+        <th>Order No</th>
+        <th>Order Date</th>
+        <th>Delivery Date</th>
+        <th>Customer</th>
+        <th>Contact</th>
+        <th>Location</th>
+        <th>Message</th>
+        <th>Surprise</th>
+        <th>Advance</th>
+        <th>Balance</th>
+        <th>About</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const form = document.getElementById("orderForm");
+    const tableBody = document.querySelector("#ordersTable tbody");
+
+    function saveToLocalStorage(data) {
+      const orders = JSON.parse(localStorage.getItem("orders") || "[]");
+      orders.push(data);
+      localStorage.setItem("orders", JSON.stringify(orders));
+    }
+
+    function loadFromLocalStorage() {
+      const orders = JSON.parse(localStorage.getItem("orders") || "[]");
+      orders.forEach(data => {
+        addRowToTable(data);
+      });
+    }
+
+    function addRowToTable(data) {
+      const row = document.createElement("tr");
+      for (let key in data) {
+        const cell = document.createElement("td");
+        cell.textContent = data[key];
+        row.appendChild(cell);
+      }
+      tableBody.appendChild(row);
+    }
+
+    form.addEventListener("submit", function(e) {
+      e.preventDefault();
+      const values = {
+        orderNumber: form.orderNumber.value,
+        orderDate: form.orderDate.value,
+        deliverDate: form.deliverDate.value,
+        customerName: form.customerName.value,
+        contact: form.contact.value,
+        location: form.location.value,
+        cakeMessage: form.cakeMessage.value,
+        surprise: form.surprise.value,
+        advance: form.advance.value,
+        balance: form.balance.value,
+        aboutOrder: form.aboutOrder.value
+      };
+      addRowToTable(values);
+      saveToLocalStorage(values);
+      form.reset();
+    });
+
+    function downloadCSV() {
+      const rows = document.querySelectorAll("table tr");
+      let csv = "";
+      rows.forEach(row => {
+        const cols = row.querySelectorAll("td, th");
+        const line = Array.from(cols).map(col => `"${col.innerText}"`).join(",");
+        csv += line + "\n";
+      });
+      const blob = new Blob([csv], { type: "text/csv" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "cake_orders.csv";
+      link.click();
+    }
+
+    window.onload = loadFromLocalStorage;
+  </script>
+
+</body>
+</html>
